@@ -1,0 +1,68 @@
+#This is the metadynamics CV file
+
+#CV1 alpha helix
+ALPHARMSD RESIDUES=all TYPE=DRMSD LESS_THAN={RATIONAL R_0=0.08 NN=8 MM=12} LABEL=helix
+
+#CV2 sum parallel and anti-parallel beta-content
+PARABETARMSD RESIDUES=all TYPE=DRMSD LESS_THAN={RATIONAL R_0=0.08 NN=8 MM=12} LABEL=par
+ANTIBETARMSD RESIDUES=all TYPE=DRMSD LESS_THAN={RATIONAL R_0=0.08 NN=8 MM=12} LABEL=anti
+COMBINE ARG=par.lessthan,anti.lessthan PERIODIC=NO LABEL=beta
+
+#CV3 radius of gyration
+ca: GROUP ATOMS=5,17,27,42,62,86,103,115,126,133,154,169,185,202,219,236,258,277,293,313,333,343,358,370,386,393,404,418,440,447,457,476,495,502,521,538,554,561,568,584,600,619
+rgyr: GYRATION ATOMS=ca NOPBC
+
+#CV4 contacts between hydrophobic residues calculated as the number of Cbeta carbon couples closer than 0.6 nm 
+COORDINATION GROUPA=19,44,171,260,279,295,315,335,372,449,459,478,504,523,540,570,586,602,621 R_0=0.6 NOPBC NLIST NL_CUTOFF=1.0 NL_STRIDE=20 LABEL=hydro
+
+#CV5 the number of salt-bridges calculated as the number of couples of heavy atoms from the charged group closer than 0.6 nm 
+#GROUP A is all the heavy atoms from RCOO- group of aspartic acids and glutamic acids 
+#GROUP B is all the heavy atoms from RHN3+ from lysines or (RNHC(NH2)2+) of arginines
+COORDINATION GROUPA=10,11,12,35,36,37,108,109,110,162,163,164,351,352,353,363,364,365 GROUPB=75,76,77,78,79,80,81,250,251,252,253,432,433,434,435 R_0=0.6 NOPBC NLIST NL_CUTOFF=1.0 NL_STRIDE=20 LABEL=salt
+
+#CV6 correlation between consecutive psi torsion angles.
+DIHCOR ...
+ATOMS1=@psi-1,@psi-2
+ATOMS2=@psi-2,@psi-3
+ATOMS3=@psi-3,@psi-4
+ATOMS4=@psi-4,@psi-5
+ATOMS5=@psi-5,@psi-6
+ATOMS6=@psi-6,@psi-7
+ATOMS7=@psi-7,@psi-8
+ATOMS8=@psi-8,@psi-9
+ATOMS9=@psi-9,@psi-10
+ATOMS10=@psi-10,@psi-11
+ATOMS11=@psi-11,@psi-12
+ATOMS12=@psi-12,@psi-13
+ATOMS13=@psi-13,@psi-14
+ATOMS14=@psi-14,@psi-15
+ATOMS15=@psi-15,@psi-16
+ATOMS16=@psi-16,@psi-17
+ATOMS17=@psi-17,@psi-18
+ATOMS18=@psi-18,@psi-19
+ATOMS19=@psi-19,@psi-20
+ATOMS20=@psi-20,@psi-21
+ATOMS21=@psi-21,@psi-22
+ATOMS22=@psi-22,@psi-23
+ATOMS23=@psi-23,@psi-24
+ATOMS24=@psi-24,@psi-25
+ATOMS25=@psi-25,@psi-26
+ATOMS26=@psi-26,@psi-27
+ATOMS27=@psi-27,@psi-28
+ATOMS28=@psi-28,@psi-29
+ATOMS29=@psi-29,@psi-30
+ATOMS30=@psi-30,@psi-31
+ATOMS31=@psi-31,@psi-32
+ATOMS32=@psi-32,@psi-33
+ATOMS33=@psi-33,@psi-34
+ATOMS34=@psi-34,@psi-35
+ATOMS35=@psi-35,@psi-36
+ATOMS36=@psi-36,@psi-37
+ATOMS37=@psi-37,@psi-38
+ATOMS38=@psi-38,@psi-39
+ATOMS39=@psi-39,@psi-40
+ATOMS40=@psi-40,@psi-41
+LABEL=dihcor
+NOPBC
+... DIHCOR
+

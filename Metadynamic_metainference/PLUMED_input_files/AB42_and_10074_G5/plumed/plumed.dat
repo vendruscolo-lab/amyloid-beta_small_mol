@@ -1,0 +1,59 @@
+#this is the master plumed.dat file for metadynamic metainference simulations
+
+# define groups
+MOLINFO STRUCTURE=../system/template.pdb
+WHOLEMOLECULES ENTITY0=1-627 ENTITY1=628-664
+FLUSH STRIDE=1000
+
+#include file with definition of metadynamics CVs on peptide
+INCLUDE FILE=CVs.dat
+
+#include file with definition of metadynamics CVs involving the small molecule
+INCLUDE FILE=CVs_drug.dat
+
+# Chemical shifts at 278 K
+cs: CS2BACKBONE ATOMS=1-627 DATADIR=../data NOPBC TEMPLATE=../system/template.pdb
+
+#activate parallel bias metadynamics
+PBMETAD ...
+ARG=helix.lessthan,beta,rgyr,hydro,salt,dihcor,reg1,reg2,reg3,reg4,reg5,reg6,reg7,reg8,reg9,reg10,reg11,reg12,reg13,reg14,ligtor1,ligtor2,ligtor3,ligtor4
+    HEIGHT=1.2
+    BIASFACTOR=49 #10*SQRT(NUM_OF_CVS)
+    SIGMA=0.64,0.33,0.03,0.69,2.75,1.34,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,0.1,0.1,0.1,0.1
+    PACE=500
+    GRID_MIN=-1,-1,-1,-1,-1,-1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,-pi,-pi,-pi,-pi
+    GRID_MAX=100,100,20,200,400,50,150,150,150,150,150,150,150,150,150,150,150,150,150,150,pi,pi,pi,pi
+    GRID_SPACING=0.1,0.1,0.01,0.1,0.1,0.01,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.01,0.01,0.01,0.01    
+    GRID_WSTRIDE=10000
+    #GRID_RFILES=GRID.helix.lessthan,GRID.beta,GRID.rgyr,GRID.hydro,GRID.salt,GRID.dihcor,GRID.reg1,GRID.reg2,GRID.reg3,GRID.reg4,GRID.reg5,GRID.reg6,GRID.reg7,GRID.reg8,GRID.reg9,GRID.reg10,GRID.reg11,GRID.reg12,GRID.reg13,GRID.reg14,GRID.ligtor1,GRID.ligtor2,GRID.ligtor3,GRID.ligtor4
+    FILE=HILLS_helix,HILLS_beta,HILLS_rgyr,HILLS_hydro,HILLS_salt,HILLS_dihcor,HILLS_reg1,HILLS_reg2,HILLS_reg3,HILLS_reg4,HILLS_reg5,HILLS_reg6,HILLS_reg7,HILLS_reg8,HILLS_reg9,HILLS_reg10,HILLS_reg11,HILLS_reg12,HILLS_reg13,HILLS_reg14,HILLS_ligtor1,HILLS_ligtor2,HILLS_ligtor3,HILLS_ligtor4
+    WALKERS_MPI
+    LABEL=pbmetad
+... PBMETAD
+
+# Metainference - one sigma per nucleus
+cs_ha: METAINFERENCE ARG=(cs\.ha-.*),pbmetad.bias PARARG=(cs\.expha-.*) SIGMA0=9.0 SIGMA_MIN=0.00001 SIGMA_MAX=10.0 DSIGMA=0.1 NOISETYPE=GAUSS REWEIGHT SIGMA_MEAN0=0.5 OPTSIGMAMEAN=SEM AVERAGING=500 WRITE_STRIDE=2500 STATUS_FILE=MISTATUS.cs_ha
+cs_hn: METAINFERENCE ARG=(cs\.hn-.*),pbmetad.bias PARARG=(cs\.exphn-.*) SIGMA0=9.0 SIGMA_MIN=0.00001 SIGMA_MAX=10.0 DSIGMA=0.1 NOISETYPE=GAUSS REWEIGHT SIGMA_MEAN0=0.5 OPTSIGMAMEAN=SEM AVERAGING=500 WRITE_STRIDE=2500 STATUS_FILE=MISTATUS.cs_hn
+cs_nh: METAINFERENCE ARG=(cs\.nh-.*),pbmetad.bias PARARG=(cs\.expnh-.*) SIGMA0=9.0 SIGMA_MIN=0.00001 SIGMA_MAX=10.0 DSIGMA=0.1 NOISETYPE=GAUSS REWEIGHT SIGMA_MEAN0=0.5 OPTSIGMAMEAN=SEM AVERAGING=500 WRITE_STRIDE=2500 STATUS_FILE=MISTATUS.cs_nh
+cs_ca: METAINFERENCE ARG=(cs\.ca-.*),pbmetad.bias PARARG=(cs\.expca-.*) SIGMA0=9.0 SIGMA_MIN=0.00001 SIGMA_MAX=10.0 DSIGMA=0.1 NOISETYPE=GAUSS REWEIGHT SIGMA_MEAN0=0.5 OPTSIGMAMEAN=SEM AVERAGING=500 WRITE_STRIDE=2500 STATUS_FILE=MISTATUS.cs_ca
+cs_cb: METAINFERENCE ARG=(cs\.cb-.*),pbmetad.bias PARARG=(cs\.expcb-.*) SIGMA0=9.0 SIGMA_MIN=0.00001 SIGMA_MAX=10.0 DSIGMA=0.1 NOISETYPE=GAUSS REWEIGHT SIGMA_MEAN0=0.5 OPTSIGMAMEAN=SEM AVERAGING=500 WRITE_STRIDE=2500 STATUS_FILE=MISTATUS.cs_cb
+cs_co: METAINFERENCE ARG=(cs\.co-.*),pbmetad.bias PARARG=(cs\.expco-.*) SIGMA0=9.0 SIGMA_MIN=0.00001 SIGMA_MAX=10.0 DSIGMA=0.1 NOISETYPE=GAUSS REWEIGHT SIGMA_MEAN0=0.5 OPTSIGMAMEAN=SEM AVERAGING=500 WRITE_STRIDE=2500 STATUS_FILE=MISTATUS.cs_co
+
+# Ensemble statistics
+ens: ENSEMBLE ARG=(cs\.ha-.*),(cs\.hn-.*),(cs\.nh-.*),(cs\.ca-.*),(cs\.cb-.*),(cs\.co-.*),pbmetad.bias REWEIGHT
+
+STATS ...
+    ARG=(ens\.cs\.ha-.*),(ens\.cs\.hn-.*),(ens\.cs\.nh-.*),(ens\.cs\.ca-.*),(ens\.cs\.cb-.*),(ens\.cs\.co-.*)
+    PARARG=(cs\.expha-.*),(cs\.exphn-.*),(cs\.expnh-.*),(cs\.expca-.*),(cs\.expcb-.*),(cs\.expco-.*) 
+    LABEL=stat
+... STATS
+
+PRINT ARG=helix.lessthan,beta,rgyr,hydro,salt,dihcor,reg1,reg2,reg3,reg4,reg5,reg6,reg7,reg8,reg9,reg10,reg11,reg12,reg13,reg14,ligtor1,ligtor2,ligtor3,ligtor4,pbmetad.bias FILE=COLVAR STRIDE=500
+PRINT ARG=(ens.*),(stat.*) FILE=STATS STRIDE=500
+PRINT ARG=(cs_ha.*) FILE=BAYES.HA STRIDE=500
+PRINT ARG=(cs_hn.*) FILE=BAYES.HN STRIDE=500
+PRINT ARG=(cs_nh.*) FILE=BAYES.NH STRIDE=500
+PRINT ARG=(cs_ca.*) FILE=BAYES.CA STRIDE=500
+PRINT ARG=(cs_cb.*) FILE=BAYES.CB STRIDE=500
+PRINT ARG=(cs_co.*) FILE=BAYES.CO STRIDE=500
+ENDPLUMED

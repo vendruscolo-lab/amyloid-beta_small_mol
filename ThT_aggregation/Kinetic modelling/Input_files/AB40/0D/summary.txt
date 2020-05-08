@@ -1,0 +1,37 @@
+Thank you for using AmyloFit!
+If you use these results please cite: G. Meisl et al, Nat. Protoc., 2016, 11, 252-272
+ http://www.nature.com/nprot/journal/v11/n2/full/nprot.2016.010.html 
+
+Please also cite the reference for the model used. Details can be found the above paper.
+
+
+SUMMARY OF FITTING RESULTS (tab separated to paste into spreadsheet):
+
+Model used: 	Secondary_Nucleation_Dominated_noseed
+
+Data normalised: 	 yes 
+
+Mean squared error: 	 0.000131768311848	 =sum[(y_i - f(x_i))^2]/(N_datapoints - N_free_parameters)
+
+Parameters from fit:
+Dataset	nc	mo	kptimesk2	n2	kptimeskn
+Units	unitless	conc	conc^{-n_2-1} time^{-2}	unitless	conc^{-n_c} time^{-2}
+Abeta40-0drug.txt: column 1	2.0	1e-05	4.2609366892e+11	2.0	20.2000488082
+
+Upper Errors:
+Dataset	nc	mo	kptimesk2	n2	kptimeskn
+Abeta40-0drug.txt: column 1	
+
+Lower Errors:
+Dataset	nc	mo	kptimesk2	n2	kptimeskn
+Abeta40-0drug.txt: column 1	
+
+
+Normalization:
+Dataset	Normalisation_constant	Zero_offset
+Abeta40-0drug.txt: column 1:	410.505714286	0.3
+
+Where the Normalisation constant, N, is the factor converting normalised data back to the units of the original input 
+and Zero offset, z, gives the baseline in units of the original data i.e. y = N*y_n + z, 
+where y is the original data and y_n the normalised data. 
+So to keep the baseline correction and simply convert back to original units you can just use N*y_n.

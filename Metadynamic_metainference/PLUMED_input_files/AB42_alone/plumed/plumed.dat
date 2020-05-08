@@ -1,0 +1,57 @@
+#this is the master plumed.dat file for metadynamic metainference simulations
+
+# define groups
+MOLINFO STRUCTURE=../system/template.pdb
+WHOLEMOLECULES ENTITY0=1-627
+FLUSH STRIDE=1000
+
+#include file with definition of metadynamics CVs
+INCLUDE FILE=CVs.dat
+
+# Chemical shifts at 278 K
+cs: CS2BACKBONE ATOMS=1-627 DATADIR=../data NOPBC TEMPLATE=../system/template.pdb
+
+#activate parallel bias metadynamics 
+PBMETAD ...
+    ARG=helix.lessthan,beta,rgyr,hydro,salt,dihcor
+    HEIGHT=1.2
+    BIASFACTOR=24 #10*SQRT(NUM_OF_CVS)
+    SIGMA=0.64,0.33,0.03,0.69,2.75,1.34
+    PACE=500
+    GRID_MIN=-1,-1,-1,-1,-1,-1
+    GRID_MAX=100,100,20,200,400,50
+    GRID_SPACING=0.1,0.1,0.01,0.1,0.1,0.01    
+    GRID_WSTRIDE=10000
+#    GRID_RFILES=GRID.helix.lessthan,GRID.beta,GRID.rgyr,GRID.hydro,GRID.salt,GRID.dihcor
+    FILE=HILLS_helix,HILLS_beta,HILLS_rgyr,HILLS_hydro,HILLS_salt,HILLS_dihcor
+    WALKERS_MPI
+    LABEL=pbmetad
+... PBMETAD
+
+# Metainference - one sigma per nucleus
+cs_ha: METAINFERENCE ARG=(cs\.ha-.*),pbmetad.bias PARARG=(cs\.expha-.*) SIGMA0=9.0 SIGMA_MIN=0.00001 SIGMA_MAX=10.0 DSIGMA=0.1 NOISETYPE=GAUSS REWEIGHT SIGMA_MEAN0=0.5 OPTSIGMAMEAN=SEM AVERAGING=500 WRITE_STRIDE=2500 STATUS_FILE=MISTATUS.cs_ha
+cs_hn: METAINFERENCE ARG=(cs\.hn-.*),pbmetad.bias PARARG=(cs\.exphn-.*) SIGMA0=9.0 SIGMA_MIN=0.00001 SIGMA_MAX=10.0 DSIGMA=0.1 NOISETYPE=GAUSS REWEIGHT SIGMA_MEAN0=0.5 OPTSIGMAMEAN=SEM AVERAGING=500 WRITE_STRIDE=2500 STATUS_FILE=MISTATUS.cs_hn
+cs_nh: METAINFERENCE ARG=(cs\.nh-.*),pbmetad.bias PARARG=(cs\.expnh-.*) SIGMA0=9.0 SIGMA_MIN=0.00001 SIGMA_MAX=10.0 DSIGMA=0.1 NOISETYPE=GAUSS REWEIGHT SIGMA_MEAN0=0.5 OPTSIGMAMEAN=SEM AVERAGING=500 WRITE_STRIDE=2500 STATUS_FILE=MISTATUS.cs_nh
+cs_ca: METAINFERENCE ARG=(cs\.ca-.*),pbmetad.bias PARARG=(cs\.expca-.*) SIGMA0=9.0 SIGMA_MIN=0.00001 SIGMA_MAX=10.0 DSIGMA=0.1 NOISETYPE=GAUSS REWEIGHT SIGMA_MEAN0=0.5 OPTSIGMAMEAN=SEM AVERAGING=500 WRITE_STRIDE=2500 STATUS_FILE=MISTATUS.cs_ca
+cs_cb: METAINFERENCE ARG=(cs\.cb-.*),pbmetad.bias PARARG=(cs\.expcb-.*) SIGMA0=9.0 SIGMA_MIN=0.00001 SIGMA_MAX=10.0 DSIGMA=0.1 NOISETYPE=GAUSS REWEIGHT SIGMA_MEAN0=0.5 OPTSIGMAMEAN=SEM AVERAGING=500 WRITE_STRIDE=2500 STATUS_FILE=MISTATUS.cs_cb
+cs_co: METAINFERENCE ARG=(cs\.co-.*),pbmetad.bias PARARG=(cs\.expco-.*) SIGMA0=9.0 SIGMA_MIN=0.00001 SIGMA_MAX=10.0 DSIGMA=0.1 NOISETYPE=GAUSS REWEIGHT SIGMA_MEAN0=0.5 OPTSIGMAMEAN=SEM AVERAGING=500 WRITE_STRIDE=2500 STATUS_FILE=MISTATUS.cs_co
+
+# Ensemble statistics
+ens: ENSEMBLE ARG=(cs\.ha-.*),(cs\.hn-.*),(cs\.nh-.*),(cs\.ca-.*),(cs\.cb-.*),(cs\.co-.*),pbmetad.bias REWEIGHT
+
+STATS ...
+    ARG=(ens\.cs\.ha-.*),(ens\.cs\.hn-.*),(ens\.cs\.nh-.*),(ens\.cs\.ca-.*),(ens\.cs\.cb-.*),(ens\.cs\.co-.*)
+    PARARG=(cs\.expha-.*),(cs\.exphn-.*),(cs\.expnh-.*),(cs\.expca-.*),(cs\.expcb-.*),(cs\.expco-.*) 
+    LABEL=stat
+... STATS
+
+#print out relevant info
+PRINT ARG=helix.lessthan,beta,rgyr,hydro,salt,dihcor,pbmetad.bias FILE=COLVAR STRIDE=500
+PRINT ARG=(ens.*),(stat.*) FILE=STATS STRIDE=500
+PRINT ARG=(cs_ha.*) FILE=BAYES.HA STRIDE=500
+PRINT ARG=(cs_hn.*) FILE=BAYES.HN STRIDE=500
+PRINT ARG=(cs_nh.*) FILE=BAYES.NH STRIDE=500
+PRINT ARG=(cs_ca.*) FILE=BAYES.CA STRIDE=500
+PRINT ARG=(cs_cb.*) FILE=BAYES.CB STRIDE=500
+PRINT ARG=(cs_co.*) FILE=BAYES.CO STRIDE=500
+ENDPLUMED
