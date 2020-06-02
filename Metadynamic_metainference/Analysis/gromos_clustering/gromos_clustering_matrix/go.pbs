@@ -1,0 +1,33 @@
+#!/bin/bash
+
+#PBS -N ener_matrix 
+#PBS -l nodes=1:ppn=16
+#PBS -l walltime=48:00:00
+#PBS -q l1
+#PBS -o pbs.out
+#PBS -e pbs.err
+#PBS -m a
+#PBS -V
+#PBS -t 0-511
+
+# activate enviroment
+#source activate test
+# increase to 512 change ntask accordingly, change ppn to 1
+# go to right directory
+cd $PBS_O_WORKDIR
+
+# total number of entries in rmsd  matrix
+nentries=2449895001 #(num_frames-1)*(num_frames-2)/2
+# number of entries per task
+ntask=4784952 #nentries/(array job elements)
+# id of the job
+id=$PBS_ARRAYID
+# range of entries for rmsd calculation
+i0=$(( $id * $ntask ))
+i1=$(( $i0 + $ntask ))
+# check if over limit, and reset
+if [ $i1 -gt $nentries ]; then i1=$nentries; fi
+
+module load anaconda/python3/5.3.0
+
+python traj_con_mindist.py LJ_shuffled_AB_G5.npy RMSD.$id $i0 $i1

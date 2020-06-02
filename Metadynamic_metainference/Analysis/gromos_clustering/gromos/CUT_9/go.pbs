@@ -1,0 +1,37 @@
+#!/bin/bash
+#PBS -N ABETA 
+#PBS -l nodes=1:ppn=1
+#PBS -l walltime=72:00:00
+#PBS -q l1
+#PBS -o pbs.out
+#PBS -e pbs.err
+#PBS -m a
+#PBS -V
+
+# Write useful stuff
+date
+echo "Starting job $PBS_JOBID"
+echo
+echo "$SHELL"
+
+echo "PBS assigned me these nodes:"
+cat $PBS_NODEFILE
+echo
+echo Running on:
+echo `uname -a`
+echo
+echo at `date`
+echo
+
+# go to right directory
+cd $PBS_O_WORKDIR
+
+# executable
+EXE=../gromos_clustering.x
+
+# rmsd matrix
+RMSD_MATRIX=../../matrix/RMSD
+# do clustering 
+$EXE $RMSD_MATRIX 512 9.0 70000 
+
+echo Finished at `date`

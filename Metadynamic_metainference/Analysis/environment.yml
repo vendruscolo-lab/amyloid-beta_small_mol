@@ -1,0 +1,12 @@
+name: analysis
+channels:
+  - defaults
+dependencies:
+  - openbabel
+  - mdtraj
+  - pyemma
+  - pygraphviz
+  - scipy
+  - conda
+prefix: /Users/gabiheller/anaconda3
+
